@@ -1,0 +1,41 @@
+{
+	"name": "youtube-clone-backend-api",
+	"version": "1.0.0",
+	"description": "A comprehensive YouTube clone backend API built with Node.js, Express.js, and MongoDB. Features include user authentication, video management, social interactions, and cloud storage integration.",
+	"main": "./src/index.js",
+	"type": "module",
+	"keywords": [
+		"youtube-clone",
+		"video-streaming",
+		"express-api",
+		"mongodb",
+		"jwt-auth",
+		"cloudinary",
+		"social-media"
+	],
+	"scripts": {
+		"start": "node src/index.js",
+		"dev": "nodemon src/index.js"
+	},
+	"author": {
+		"name": "Sayan Banerjee",
+		"email": "sayankb.001@gmail.com"
+	},
+	"license": "MIT",
+	"dependencies": {
+		"bcrypt": "^5.1.1",
+		"cloudinary": "^2.0.2",
+		"cookie-parser": "^1.4.6",
+		"cors": "^2.8.5",
+		"dotenv": "^16.3.1",
+		"express": "^4.18.2",
+		"express-rate-limit": "^7.5.1",
+		"jsonwebtoken": "^9.0.2",
+		"mongoose": "^8.0.1",
+		"multer": "^1.4.5-lts.1"
+	},
+	"devDependencies": {
+		"nodemon": "^3.1.0",
+		"prettier": "^3.1.0"
+	}
+}
