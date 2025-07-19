@@ -1,4 +1,4 @@
-import { Tweet, User } from '../models/index.js'
+import { Like, Tweet, User } from '../models/index.js'
 import mongoose, { isValidObjectId } from 'mongoose'
 import { asyncHandler, ApiError, ApiResponse, paginateArray } from '../utils/index.js'
 
@@ -199,38 +199,36 @@ const updateTweet = asyncHandler(async (req, res) => {
  */
 const deleteTweet = asyncHandler(async (req, res) => {
 	const { tweetId } = req.params
+	const userId = req.user._id
 
 	// Validate tweet ID format
 	if (!isValidObjectId(tweetId)) {
 		throw new ApiError(400, 'Invalid tweet ID format.')
 	}
 
-	// Ensure user is authenticated
-	if (!req.user?._id) {
-		throw new ApiError(401, 'User not authenticated.')
+	// Find tweet
+	const tweet = await Tweet.findById(tweetId)
+	if (!tweet) {
+		throw new ApiError(404, 'Tweet not found.')
 	}
 
-	try {
-		// Delete tweet (only if user is the owner)
-		const tweet = await Tweet.findOneAndDelete({
-			_id: tweetId,
-			owner: req.user._id, // Ensures only owner can delete
-		})
+	const tweetOwnerId = tweet.owner
 
-		if (!tweet) {
-			throw new ApiError(404, 'Tweet not found or you are not authorized to delete this tweet.')
-		}
+	// Check authorization - only tweet owner can delete
+	const isTweetOwner = tweetOwnerId.toString() === userId.toString()
 
-		// TODO: Consider cleaning up related data (likes, comments, etc.)
-		// This could be done here or via database triggers/middleware
-
-		res.status(200).json(new ApiResponse(200, null, 'Tweet deleted successfully.'))
-	} catch (error) {
-		if (error instanceof ApiError) {
-			throw error
-		}
-		throw new ApiError(500, 'Failed to delete tweet. Please try again.')
+	if (!isTweetOwner) {
+		throw new ApiError(
+			403,
+			'You are not authorized to delete this tweet. Only the tweet author can delete tweets.'
+		)
 	}
+
+	// Delete the tweet
+	await Tweet.deleteOne({ _id: tweetId })
+	await Like.deleteMany({ tweet: tweetId })
+
+	return res.status(200).json(new ApiResponse(200, null, 'Tweet deleted successfully.'))
 })
 
 export { createTweet, getUserTweets, updateTweet, deleteTweet }

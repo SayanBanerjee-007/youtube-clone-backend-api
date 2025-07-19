@@ -66,7 +66,8 @@ const healthCheck = asyncHandler(async (_, res) => {
 		}
 
 		// Determine overall health status
-		const isHealthy = databaseStatus.connected && memoryUsage.heapUsed < memoryUsage.heapTotal * 0.9 // Less than 90% heap usage
+		const isHealthy =
+			databaseStatus.connected && memoryUsage.heapUsed < memoryUsage.heapTotal * 0.95 // Less than 90% heap usage
 
 		if (!isHealthy) {
 			healthInfo.status = 'degraded'

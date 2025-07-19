@@ -173,10 +173,10 @@ const getLikedVideos = asyncHandler(async (req, res) => {
 	const videos = validLikes.map(like => like.video)
 
 	// Apply pagination
-	const paginatedVideos = paginateArray(videos, pageNum, limitNum)
+	const paginatedVideos = paginateArray(videos, pageNum, limitNum, 'videos')
 
 	// Check if any videos were found
-	if (!paginatedVideos.data || paginatedVideos.data.length === 0) {
+	if (!paginatedVideos.videos || paginatedVideos.videos.length === 0) {
 		return res.status(200).json(
 			new ApiResponse(
 				200,

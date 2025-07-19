@@ -5,7 +5,7 @@ const asyncHandler = callBack => {
 		try {
 			await callBack(req, res, next)
 		} catch (error) {
-			console.log('\nasyncHandler error.stack:\n\n', error.stack)
+			// console.log('\nasyncHandler error.stack:\n\n', error.stack)
 			res
 				.status(error.statusCode || 500)
 				.send(

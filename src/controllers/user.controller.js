@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken'
 import mongoose from 'mongoose'
-import { User } from '../models/index.js'
+import { User, Video, Comment, Like, Tweet, Playlist, Subscription } from '../models/index.js'
 import { deleteImageFromCloudinary } from '../utils/cloudinary.js'
 import { REFRESH_TOKEN_SECRET, cookieOptions } from '../constants.js'
 import { asyncHandler, ApiError, ApiResponse, uploadOnCloudinary } from '../utils/index.js'
@@ -81,29 +81,25 @@ const userRegister = asyncHandler(async (req, res) => {
 		throw new ApiError(409, 'User with same username or email already exists.')
 	}
 
-	// Validate avatar file upload
+	// Handle optional avatar file upload
+	let avatar = null
 	if (
-		!req.files ||
-		!req.files.avatar ||
-		!Array.isArray(req.files.avatar) ||
-		req.files.avatar.length === 0
+		req.files &&
+		req.files.avatar &&
+		Array.isArray(req.files.avatar) &&
+		req.files.avatar.length > 0
 	) {
-		throw new ApiError(400, 'Avatar is required.')
-	}
-
-	const avatarLocalPath = req.files.avatar[0].path
-	if (!avatarLocalPath) {
-		throw new ApiError(400, 'Avatar file path is missing.')
-	}
-
-	// Upload avatar to cloudinary
-	const avatar = await uploadOnCloudinary(avatarLocalPath)
-	if (!avatar?.url) {
-		// Clean up failed upload
-		if (avatar?.public_id) {
-			await deleteImageFromCloudinary(avatar.public_id)
+		const avatarLocalPath = req.files.avatar[0].path
+		if (avatarLocalPath) {
+			avatar = await uploadOnCloudinary(avatarLocalPath)
+			if (!avatar?.url) {
+				// Clean up failed upload
+				if (avatar?.public_id) {
+					await deleteImageFromCloudinary(avatar.public_id)
+				}
+				throw new ApiError(500, 'Error uploading avatar.')
+			}
 		}
-		throw new ApiError(500, 'Error uploading avatar.')
 	}
 
 	// Handle optional cover image upload
@@ -132,7 +128,7 @@ const userRegister = asyncHandler(async (req, res) => {
 		username: username.toLowerCase(),
 		email: email.toLowerCase(),
 		fullName,
-		avatar: avatar.url,
+		avatar: avatar?.url || '',
 		coverImage: coverImage?.url || '',
 		password,
 	})
@@ -144,7 +140,9 @@ const userRegister = asyncHandler(async (req, res) => {
 	if (!createdUser) {
 		// Clean up on failure
 		await User.findByIdAndDelete(user._id)
-		await deleteImageFromCloudinary(avatar.public_id)
+		if (avatar?.public_id) {
+			await deleteImageFromCloudinary(avatar.public_id)
+		}
 		if (coverImage?.public_id) {
 			await deleteImageFromCloudinary(coverImage.public_id)
 		}
@@ -208,7 +206,7 @@ const userLogin = asyncHandler(async (req, res) => {
 
 /**
  * Logs out user and clears refresh token
- * @route POST /api/v1/users/logout
+ * @route DELETE /api/v1/users/logout
  * @access Private
  */
 const userLogout = asyncHandler(async (req, res) => {
@@ -307,7 +305,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
  */
 const changeCurrentPassword = asyncHandler(async (req, res) => {
 	const { currentPassword, newPassword } = req.body
-	console.log(currentPassword, newPassword)
+
 	// Validate required fields
 	if ([currentPassword, newPassword].some(field => field?.trim() === '' || field === undefined)) {
 		throw new ApiError(400, 'Both current and new password are required.')
@@ -661,6 +659,129 @@ const getUserWatchHistory = asyncHandler(async (req, res) => {
 	}
 })
 
+/**
+ * Delete user account and all associated data
+ * @desc Permanently deletes user account and all related content including videos, comments, tweets, playlists, likes, and subscriptions
+ * @route DELETE /api/v1/users/delete-account
+ * @access Private
+ * @body {string} password - Current user password for confirmation
+ */
+const deleteUserAccount = asyncHandler(async (req, res) => {
+	const userId = req.user._id
+	const { password } = req.body
+
+	// Ensure user is authenticated
+	if (!userId) {
+		throw new ApiError(401, 'User not authenticated.')
+	}
+
+	// Validate password is provided
+	if (!password) {
+		throw new ApiError(400, 'Password is required to delete account.')
+	}
+
+	try {
+		// Find the user to get avatar and cover image URLs for deletion
+		const user = await User.findById(userId)
+		if (!user) {
+			throw new ApiError(404, 'User not found.')
+		}
+
+		// Verify password before proceeding with deletion
+		const isPasswordValid = await user.isPasswordCorrect(password)
+		if (!isPasswordValid) {
+			throw new ApiError(401, 'Invalid password. Account deletion cancelled.')
+		}
+
+		// Get all user's videos to delete from cloudinary
+		const userVideos = await Video.find({ owner: userId })
+
+		// Delete all video files from cloudinary
+		for (const video of userVideos) {
+			if (video.videoFile) {
+				try {
+					await deleteImageFromCloudinary(video.videoFile)
+				} catch (error) {
+					console.warn(`Failed to delete video file: ${video.videoFile}`, error)
+				}
+			}
+			if (video.thumbnail) {
+				try {
+					await deleteImageFromCloudinary(video.thumbnail)
+				} catch (error) {
+					console.warn(`Failed to delete thumbnail: ${video.thumbnail}`, error)
+				}
+			}
+		}
+
+		// Delete user's avatar and cover image from cloudinary
+		if (user.avatar) {
+			try {
+				await deleteImageFromCloudinary(user.avatar)
+			} catch (error) {
+				console.warn(`Failed to delete avatar: ${user.avatar}`, error)
+			}
+		}
+		if (user.coverImage) {
+			try {
+				await deleteImageFromCloudinary(user.coverImage)
+			} catch (error) {
+				console.warn(`Failed to delete cover image: ${user.coverImage}`, error)
+			}
+		}
+
+		// Delete all user-related data in order of dependencies
+		// 1. Delete likes on user's content
+		await Like.deleteMany({
+			$or: [
+				{ video: { $in: userVideos.map(v => v._id) } },
+				{ comment: { $in: await Comment.find({ owner: userId }).distinct('_id') } },
+				{ tweet: { $in: await Tweet.find({ owner: userId }).distinct('_id') } },
+			],
+		})
+
+		// 2. Delete likes made by user
+		await Like.deleteMany({ likedBy: userId })
+
+		// 3. Delete comments on user's videos
+		await Comment.deleteMany({ video: { $in: userVideos.map(v => v._id) } })
+
+		// 4. Delete user's comments
+		await Comment.deleteMany({ owner: userId })
+
+		// 5. Delete user's tweets
+		await Tweet.deleteMany({ owner: userId })
+
+		// 6. Delete user's playlists
+		await Playlist.deleteMany({ owner: userId })
+
+		// 7. Delete user's videos
+		await Video.deleteMany({ owner: userId })
+
+		// 8. Delete user's subscriptions (both as subscriber and channel)
+		await Subscription.deleteMany({
+			$or: [{ subscriber: userId }, { channel: userId }],
+		})
+
+		// 9. Finally, delete the user account
+		await User.findByIdAndDelete(userId)
+
+		// Clear cookies
+		res
+			.status(200)
+			.clearCookie('accessToken', cookieOptions)
+			.clearCookie('refreshToken', cookieOptions)
+			.json(
+				new ApiResponse(200, null, 'User account and all associated data deleted successfully.')
+			)
+	} catch (error) {
+		if (error instanceof ApiError) {
+			throw error
+		}
+		throw new ApiError(500, 'Failed to delete user account. Please try again.')
+	}
+})
+
 export {
 	userRegister,
 	userLogin,
@@ -673,4 +794,5 @@ export {
 	updateUserCoverImage,
 	getUserChannelProfile,
 	getUserWatchHistory,
+	deleteUserAccount,
 }

@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Clone API Documentation</title>
+    <link rel="stylesheet" href="/css/styles-v1.css">
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📺</text></svg>">
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body data-theme="dark">
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fab fa-youtube"></i> YouTube Clone API</h1>
+                <p>Complete API documentation with interactive testing</p>
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-sun"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="nav">
+            <div class="nav-item active" data-section="health">
+                <i class="fas fa-heartbeat"></i> Health Check
+            </div>
+            <div class="nav-item" data-section="auth">
+                <i class="fas fa-user-shield"></i> Authentication
+            </div>
+            <div class="nav-item" data-section="videos">
+                <i class="fas fa-video"></i> Videos
+            </div>
+            <div class="nav-item" data-section="comments">
+                <i class="fas fa-comments"></i> Comments
+            </div>
+            <div class="nav-item" data-section="likes">
+                <i class="fas fa-thumbs-up"></i> Likes
+            </div>
+            <div class="nav-item" data-section="subscriptions">
+                <i class="fas fa-bell"></i> Subscriptions
+            </div>
+            <div class="nav-item" data-section="playlists">
+                <i class="fas fa-list"></i> Playlists
+            </div>
+            <div class="nav-item" data-section="tweets">
+                <i class="fas fa-twitter"></i> Tweets
+            </div>
+            <div class="nav-item" data-section="dashboard">
+                <i class="fas fa-chart-bar"></i> Dashboard
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Auth Status -->
+            <div class="auth-status" id="authStatus">
+                <span class="status-indicator" id="statusIndicator">Not Authenticated</span>
+                <button class="btn btn-auth" id="authBtn">Login</button>
+            </div>
+
+            <!-- API Sections -->
+            <div class="api-section active" id="health">
+                <h2><i class="fas fa-heartbeat"></i> Health Check</h2>
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/v1/health-check</span>
+                        <span class="access public">Public</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Check if the application is running and responding properly.
+                    </div>
+                    <div class="endpoint-actions">
+                        <button class="btn btn-test" onclick="testEndpoint('GET', '/api/v1/health-check')">
+                            <i class="fas fa-play"></i> Test
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="api-section" id="auth">
+                <h2><i class="fas fa-user-shield"></i> Authentication</h2>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span class="path">/api/v1/users/register</span>
+                        <span class="access public">Public</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Register a new user account with avatar and cover image upload.
+                    </div>
+                    <div class="form-container">
+                        <form class="api-form" id="registerForm" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <label>Username *</label>
+                                <input type="text" name="username" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Email *</label>
+                                <input type="email" name="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Full Name *</label>
+                                <input type="text" name="fullName" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Password *</label>
+                                <input type="password" name="password" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Avatar</label>
+                                <input type="file" name="avatar" accept="image/*">
+                            </div>
+                            <div class="form-group">
+                                <label>Cover Image</label>
+                                <input type="file" name="coverImage" accept="image/*">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="endpoint-actions">
+                        <button class="btn btn-test"
+                            onclick="submitForm('registerForm', 'POST', '/api/v1/users/register')">
+                            <i class="fas fa-user-plus"></i> Register
+                        </button>
+                    </div>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span class="path">/api/v1/users/login</span>
+                        <span class="access public">Public</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Login with username/email and password.
+                    </div>
+                    <div class="form-container">
+                        <form class="api-form" id="loginForm">
+                            <div class="form-group">
+                                <label>Username or Email *</label>
+                                <input type="text" name="usernameEmail" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Password *</label>
+                                <input type="password" name="password" required>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="endpoint-actions">
+                        <button class="btn btn-test" onclick="submitForm('loginForm', 'POST', '/api/v1/users/login')">
+                            <i class="fas fa-sign-in-alt"></i> Login
+                        </button>
+                    </div>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method delete">DELETE</span>
+                        <span class="path">/api/v1/users/logout</span>
+                        <span class="access private">Private</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Logout current user and invalidate tokens.
+                    </div>
+                    <div class="endpoint-actions">
+                        <button class="btn btn-test" onclick="testEndpoint('DELETE', '/api/v1/users/logout')">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/v1/users/get-current-user</span>
+                        <span class="access private">Private</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Get current authenticated user's profile information.
+                    </div>
+                    <div class="endpoint-actions">
+                        <button class="btn btn-test" onclick="testEndpoint('GET', '/api/v1/users/get-current-user')">
+                            <i class="fas fa-user"></i> Get Profile
+                        </button>
+                    </div>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span class="path">/api/v1/users/refresh-access-token</span>
+                        <span class="access public">Public</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Refresh access token using valid refresh token.
+                    </div>
+                    <div class="form-container">
+                        <form class="api-form" id="refreshTokenForm">
+                            <div class="form-group">
+                                <label>Refresh Token *</label>
+                                <input type="text" name="refreshToken" required placeholder="Enter refresh token">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="endpoint-actions">
+                        <button class="btn btn-test"
+                            onclick="submitForm('refreshTokenForm', 'POST', '/api/v1/users/refresh-access-token')">
+                            <i class="fas fa-sync-alt"></i> Refresh Token
+                        </button>
+                    </div>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method patch">PATCH</span>
+                        <span class="path">/api/v1/users/change-current-password</span>
+                        <span class="access private">Private</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Change current user's password.
+                    </div>
+                    <div class="form-container">
+                        <form class="api-form" id="changePasswordForm">
+                            <div class="form-group">
+                                <label>Current Password *</label>
+                                <input type="password" name="currentPassword" required>
+                            </div>
+                            <div class="form-group">
+                                <label>New Password *</label>
+                                <input type="password" name="newPassword" required minlength="6">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="endpoint-actions">
+                        <button class="btn btn-test"
+                            onclick="submitForm('changePasswordForm', 'PATCH', '/api/v1/users/change-current-password')">
+                            <i class="fas fa-key"></i> Change Password
+                        </button>
+                    </div>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method patch">PATCH</span>
+                        <span class="path">/api/v1/users/update-account-details</span>
+                        <span class="access private">Private</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Update user's account details (fullName, username).
+                    </div>
+                    <div class="form-container">
+                        <form class="api-form" id="updateAccountForm">
+                            <div class="form-group">
+                                <label>Full Name</label>
+                                <input type="text" name="fullName" placeholder="Enter new full name">
+                            </div>
+                            <div class="form-group">
+                                <label>Username</label>
+                                <input type="text" name="username" placeholder="Enter new username">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="endpoint-actions">
+                        <button class="btn btn-test"
+                            onclick="submitForm('updateAccountForm', 'PATCH', '/api/v1/users/update-account-details')">
+                            <i class="fas fa-edit"></i> Update Account
+                        </button>
+                    </div>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method patch">PATCH</span>
+                        <span class="path">/api/v1/users/update-user-avatar</span>
+                        <span class="access private">Private</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Update user's avatar image.
+                    </div>
+                    <div class="form-container">
+                        <form class="api-form" id="updateAvatarForm">
+                            <div class="form-group">
+                                <label>Avatar *</label>
+                                <input type="file" name="avatar" accept="image/*" required>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="endpoint-actions">
+                        <button class="btn btn-test"
+                            onclick="submitForm('updateAvatarForm', 'PATCH', '/api/v1/users/update-user-avatar')">
+                            <i class="fas fa-user-circle"></i> Update Avatar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method patch">PATCH</span>
+                        <span class="path">/api/v1/users/update-user-cover-image</span>
+                        <span class="access private">Private</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Update user's cover image.
+                    </div>
+                    <div class="form-container">
+                        <form class="api-form" id="updateCoverImageForm">
+                            <div class="form-group">
+                                <label>Cover Image *</label>
+                                <input type="file" name="coverImage" accept="image/*" required>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="endpoint-actions">
+                        <button class="btn btn-test"
+                            onclick="submitForm('updateCoverImageForm', 'PATCH', '/api/v1/users/update-user-cover-image')">
+                            <i class="fas fa-image"></i> Update Cover Image
+                        </button>
+                    </div>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/v1/users/channel/:username</span>
+                        <span class="access public">Public</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Get user channel profile with subscription information.
+                    </div>
+                    <div class="form-container">
+                        <form class="api-form" id="getChannelProfileForm">
+                            <div class="form-group">
+                                <label>Username *</label>
+                                <input type="text" name="username" required placeholder="Enter username">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="endpoint-actions">
+                        <button class="btn btn-test" onclick="getChannelProfile()">
+                            <i class="fas fa-tv"></i> Get Channel Profile
+                        </button>
+                    </div>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/v1/users/get-user-watch-history</span>
+                        <span class="access private">Private</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Get user's watch history with video and owner details.
+                    </div>
+                    <div class="endpoint-actions">
+                        <button class="btn btn-test"
+                            onclick="testEndpoint('GET', '/api/v1/users/get-user-watch-history')">
+                            <i class="fas fa-history"></i> Get Watch History
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="api-section" id="videos">
+                <h2><i class="fas fa-video"></i> Videos</h2>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/v1/videos</span>
+                        <span class="access public">Public</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Get all published videos with pagination and filtering.
+                    </div>
+                    <div class="form-container">
+                        <form class="api-form" id="videosForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Page</label>
+                                    <input type="number" name="page" value="1" min="1">
+                                </div>
+                                <div class="form-group">
+                                    <label>Limit</label>
+                                    <input type="number" name="limit" value="10" min="1" max="100">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Search Keyword</label>
+                                <input type="text" name="keyword" placeholder="Search videos...">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Sort By</label>
+                                    <select name="sortBy">
+                                        <option value="createdAt">Created Date</option>
+                                        <option value="views">Views</option>
+                                        <option value="likesCount">Likes</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Sort Order</label>
+                                    <select name="sortType">
+                                        <option value="desc">Descending</option>
+                                        <option value="asc">Ascending</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="endpoint-actions">
+                        <button class="btn btn-test" onclick="submitForm('videosForm', 'GET', '/api/v1/videos')">
+                            <i class="fas fa-search"></i> Get Videos
+                        </button>
+                    </div>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span class="path">/api/v1/videos</span>
+                        <span class="access private">Private</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Upload and publish a new video with thumbnail.
+                    </div>
+                    <div class="form-container">
+                        <form class="api-form" id="uploadVideoForm">
+                            <div class="form-group">
+                                <label>Title *</label>
+                                <input type="text" name="title" required maxlength="100">
+                            </div>
+                            <div class="form-group">
+                                <label>Description *</label>
+                                <textarea name="description" required maxlength="1000" rows="3"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Video File *</label>
+                                <input type="file" name="videoFile" accept="video/*" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Thumbnail *</label>
+                                <input type="file" name="thumbnail" accept="image/*" required>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="endpoint-actions">
+                        <button class="btn btn-test" onclick="submitForm('uploadVideoForm', 'POST', '/api/v1/videos')">
+                            <i class="fas fa-upload"></i> Upload Video
+                        </button>
+                    </div>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/v1/videos/:videoId</span>
+                        <span class="access public">Public</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Get specific video by ID with view tracking.
+                    </div>
+                    <div class="form-container">
+                        <form class="api-form" id="getVideoForm">
+                            <div class="form-group">
+                                <label>Video ID *</label>
+                                <input type="text" name="videoId" required placeholder="Enter video ID">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="endpoint-actions">
+                        <button class="btn btn-test" onclick="getVideoById()">
+                            <i class="fas fa-eye"></i> Get Video
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="api-section" id="comments">
+                <h2><i class="fas fa-comments"></i> Comments</h2>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/v1/comments/:videoId</span>
+                        <span class="access public">Public</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Get all comments for a specific video with pagination.
+                    </div>
+                    <div class="form-container">
+                        <form class="api-form" id="getCommentsForm">
+                            <div class="form-group">
+                                <label>Video ID *</label>
+                                <input type="text" name="videoId" required placeholder="Enter video ID">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Page</label>
+                                    <input type="number" name="page" value="1" min="1">
+                                </div>
+                                <div class="form-group">
+                                    <label>Limit</label>
+                                    <input type="number" name="limit" value="10" min="1">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="endpoint-actions">
+                        <button class="btn btn-test" onclick="getComments()">
+                            <i class="fas fa-comments"></i> Get Comments
+                        </button>
+                    </div>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span class="path">/api/v1/comments/:videoId</span>
+                        <span class="access private">Private</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Add a new comment to a video.
+                    </div>
+                    <div class="form-container">
+                        <form class="api-form" id="addCommentForm">
+                            <div class="form-group">
+                                <label>Video ID *</label>
+                                <input type="text" name="videoId" required placeholder="Enter video ID">
+                            </div>
+                            <div class="form-group">
+                                <label>Comment *</label>
+                                <textarea name="content" required maxlength="500" rows="3"
+                                    placeholder="Write your comment..."></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="endpoint-actions">
+                        <button class="btn btn-test" onclick="addComment()">
+                            <i class="fas fa-plus"></i> Add Comment
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="api-section" id="likes">
+                <h2><i class="fas fa-thumbs-up"></i> Likes</h2>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span class="path">/api/v1/likes/toggle/video/:videoId</span>
+                        <span class="access private">Private</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Toggle like/dislike on a video.
+                    </div>
+                    <div class="form-container">
+                        <form class="api-form" id="likeVideoForm">
+                            <div class="form-group">
+                                <label>Video ID *</label>
+                                <input type="text" name="videoId" required placeholder="Enter video ID">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="endpoint-actions">
+                        <button class="btn btn-test" onclick="toggleVideoLike()">
+                            <i class="fas fa-heart"></i> Toggle Like
+                        </button>
+                    </div>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/v1/likes/videos</span>
+                        <span class="access private">Private</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Get all liked videos by current user.
+                    </div>
+                    <div class="endpoint-actions">
+                        <button class="btn btn-test" onclick="testEndpoint('GET', '/api/v1/likes/videos')">
+                            <i class="fas fa-list"></i> Get Liked Videos
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="api-section" id="subscriptions">
+                <h2><i class="fas fa-bell"></i> Subscriptions</h2>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span class="path">/api/v1/subscriptions/channel/:channelId</span>
+                        <span class="access private">Private</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Subscribe/unsubscribe to a channel.
+                    </div>
+                    <div class="form-container">
+                        <form class="api-form" id="subscribeForm">
+                            <div class="form-group">
+                                <label>Channel ID *</label>
+                                <input type="text" name="channelId" required placeholder="Enter channel ID">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="endpoint-actions">
+                        <button class="btn btn-test" onclick="toggleSubscription()">
+                            <i class="fas fa-bell"></i> Toggle Subscription
+                        </button>
+                    </div>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/v1/subscriptions</span>
+                        <span class="access private">Private</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Get current user's subscriptions.
+                    </div>
+                    <div class="endpoint-actions">
+                        <button class="btn btn-test" onclick="testEndpoint('GET', '/api/v1/subscriptions')">
+                            <i class="fas fa-list"></i> Get Subscriptions
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="api-section" id="playlists">
+                <h2><i class="fas fa-list"></i> Playlists</h2>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span class="path">/api/v1/playlists</span>
+                        <span class="access private">Private</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Create a new playlist.
+                    </div>
+                    <div class="form-container">
+                        <form class="api-form" id="createPlaylistForm">
+                            <div class="form-group">
+                                <label>Name *</label>
+                                <input type="text" name="name" required maxlength="100">
+                            </div>
+                            <div class="form-group">
+                                <label>Description</label>
+                                <textarea name="description" maxlength="500" rows="3"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="endpoint-actions">
+                        <button class="btn btn-test"
+                            onclick="submitForm('createPlaylistForm', 'POST', '/api/v1/playlists')">
+                            <i class="fas fa-plus"></i> Create Playlist
+                        </button>
+                    </div>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/v1/playlists/user/:userId</span>
+                        <span class="access public">Public</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Get all playlists by user ID.
+                    </div>
+                    <div class="form-container">
+                        <form class="api-form" id="getUserPlaylistsForm">
+                            <div class="form-group">
+                                <label>User ID *</label>
+                                <input type="text" name="userId" required placeholder="Enter user ID">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="endpoint-actions">
+                        <button class="btn btn-test" onclick="getUserPlaylists()">
+                            <i class="fas fa-user"></i> Get User Playlists
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="api-section" id="tweets">
+                <h2><i class="fas fa-twitter"></i> Tweets</h2>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span class="path">/api/v1/tweets</span>
+                        <span class="access private">Private</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Create a new tweet/post.
+                    </div>
+                    <div class="form-container">
+                        <form class="api-form" id="createTweetForm">
+                            <div class="form-group">
+                                <label>Content *</label>
+                                <textarea name="content" required maxlength="280" rows="3"
+                                    placeholder="What's happening?"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="endpoint-actions">
+                        <button class="btn btn-test" onclick="submitForm('createTweetForm', 'POST', '/api/v1/tweets')">
+                            <i class="fas fa-paper-plane"></i> Post Tweet
+                        </button>
+                    </div>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/v1/tweets/user/:userId</span>
+                        <span class="access public">Public</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Get all tweets by user ID.
+                    </div>
+                    <div class="form-container">
+                        <form class="api-form" id="getUserTweetsForm">
+                            <div class="form-group">
+                                <label>User ID *</label>
+                                <input type="text" name="userId" required placeholder="Enter user ID">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="endpoint-actions">
+                        <button class="btn btn-test" onclick="getUserTweets()">
+                            <i class="fas fa-user"></i> Get User Tweets
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="api-section" id="dashboard">
+                <h2><i class="fas fa-chart-bar"></i> Dashboard</h2>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/v1/dashboard/stats</span>
+                        <span class="access private">Private</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Get channel statistics and analytics.
+                    </div>
+                    <div class="endpoint-actions">
+                        <button class="btn btn-test" onclick="testEndpoint('GET', '/api/v1/dashboard/stats')">
+                            <i class="fas fa-chart-line"></i> Get Stats
+                        </button>
+                    </div>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/v1/dashboard/videos</span>
+                        <span class="access private">Private</span>
+                    </div>
+                    <div class="endpoint-description">
+                        Get all videos uploaded by current user.
+                    </div>
+                    <div class="endpoint-actions">
+                        <button class="btn btn-test" onclick="testEndpoint('GET', '/api/v1/dashboard/videos')">
+                            <i class="fas fa-video"></i> Get My Videos
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Response Display -->
+            <div class="response-container" id="responseContainer">
+                <h3>Response</h3>
+                <div class="response-tabs">
+                    <button class="tab-btn active" data-tab="pretty">Pretty</button>
+                    <button class="tab-btn" data-tab="raw">Raw</button>
+                </div>
+                <div class="response-content">
+                    <div class="tab-content active" id="prettyTab">
+                        <pre><code id="prettyResponse" class="language-json"></code></pre>
+                    </div>
+                    <div class="tab-content" id="rawTab">
+                        <pre><code id="rawResponse"></code></pre>
+                    </div>
+                </div>
+                <div class="response-status" id="responseStatus"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+    <script src="/js/main-v1.js"></script>
+</body>
+
+</html>

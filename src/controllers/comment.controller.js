@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import { Video, Comment } from '../models/index.js'
+import { Video, Comment, Like } from '../models/index.js'
 import { asyncHandler, ApiError, ApiResponse, paginateArray } from '../utils/index.js'
 
 /**
@@ -276,6 +276,7 @@ const deleteComment = asyncHandler(async (req, res) => {
 
 	// Delete the comment
 	await Comment.deleteOne({ _id: commentId })
+	await Like.deleteMany({ comment: commentId })
 
 	return res.status(200).json(new ApiResponse(200, null, 'Comment deleted successfully.'))
 })

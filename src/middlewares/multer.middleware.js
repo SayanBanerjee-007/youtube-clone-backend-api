@@ -1,10 +1,14 @@
 import fs from 'fs'
 import path from 'path'
 import multer from 'multer'
+import { ApiError, asyncHandler } from '../utils/index.js'
+import { FILE_SIZE_LIMITS, FILE_SIZE_DISPLAY } from '../constants.js'
 
 /**
- * Multer configuration for file uploads
- * Handles file storage with proper error checking and validation
+ * @fileoverview Multer configuration for file uploads
+ * @description Handles file storage with proper error checking and validation
+ * @author Sayan Banerjee
+ * @created 2024
  */
 
 // Ensure upload directory exists
@@ -14,8 +18,12 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 /**
- * Cleanup uploaded files from temp directory
- * Call this after successful upload to cloud or on error
+ * @function cleanupTempFiles
+ * @description Cleanup uploaded files from temp directory
+ * @param {Object} req - Express request object containing file information
+ * @returns {void}
+ * @note Call this after successful upload to cloud or on error
+ * @example cleanupTempFiles(req)
  */
 const cleanupTempFiles = req => {
 	try {
@@ -67,8 +75,15 @@ const cleanupTempFiles = req => {
 }
 
 /**
- * Middleware to automatically cleanup temp files after request completion
- * This runs after all middlewares and controllers have finished
+ * @function autoCleanupTemp
+ * @description Middleware to automatically cleanup temp files after request completion
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * @returns {void}
+ * @note This runs after all middlewares and controllers have finished
+ * @note Prevents memory leaks by cleaning up temporary files
+ * @example app.use(autoCleanupTemp)
  */
 const autoCleanupTemp = (req, res, next) => {
 	// Store original response methods
@@ -116,8 +131,13 @@ const autoCleanupTemp = (req, res, next) => {
 }
 
 /**
- * Storage configuration for multer
- * Files are stored in ./public/temp with timestamped filenames
+ * @constant storage
+ * @description Storage configuration for multer
+ * @type {Object}
+ * @property {Function} destination - Sets destination directory for uploaded files
+ * @property {Function} filename - Generates unique filename with timestamp
+ * @note Files are stored in ./public/temp with timestamped filenames
+ * @note Sanitizes filenames to prevent security issues
  */
 const storage = multer.diskStorage({
 	destination: function (req, file, cb) {
@@ -153,7 +173,20 @@ const storage = multer.diskStorage({
 })
 
 /**
- * File filters for specific file types
+ * @section File Filters
+ * @description File filters for specific file types validation
+ */
+
+/**
+ * @function imageFileFilter
+ * @description Validates image file uploads
+ * @param {Object} req - Express request object
+ * @param {Object} file - Multer file object
+ * @param {Function} cb - Callback function
+ * @returns {void}
+ * @throws {Error} Invalid file format or unsupported image type
+ * @note Accepts: JPEG, JPG, PNG, GIF, WebP
+ * @example multer({ fileFilter: imageFileFilter })
  */
 const imageFileFilter = (req, file, cb) => {
 	try {
@@ -173,6 +206,17 @@ const imageFileFilter = (req, file, cb) => {
 	}
 }
 
+/**
+ * @function videoFileFilter
+ * @description Validates video file uploads
+ * @param {Object} req - Express request object
+ * @param {Object} file - Multer file object
+ * @param {Function} cb - Callback function
+ * @returns {void}
+ * @throws {Error} Invalid file format or unsupported video type
+ * @note Accepts: MP4, AVI, MKV, MOV, WMV
+ * @example multer({ fileFilter: videoFileFilter })
+ */
 const videoFileFilter = (req, file, cb) => {
 	try {
 		if (!file || !file.originalname || !file.mimetype) {
@@ -214,7 +258,21 @@ const videoFileFilter = (req, file, cb) => {
 // }
 
 /**
- * Upload configurations for different file types with specific size limits
+ * @section Upload Configurations
+ * @description Upload configurations for different file types with specific size limits
+ */
+
+/**
+ * @constant uploadImages
+ * @description Multer configuration for image uploads
+ * @type {Object}
+ * @property {Object} storage - Storage configuration
+ * @property {Function} fileFilter - Image file filter
+ * @property {Object} limits - File size and count limits
+ * @note Maximum file size: 2MB per image
+ * @note Maximum files: 2 images per request
+ * @note Supported formats: JPEG, PNG, GIF, WebP
+ * @example uploadImages.single('avatar'), uploadImages.fields([{name: 'avatar', maxCount: 1}])
  */
 
 // For any images  - 2MB limit
@@ -222,21 +280,47 @@ const uploadImages = multer({
 	storage,
 	fileFilter: imageFileFilter,
 	limits: {
-		fileSize: 2 * 1024 * 1024, // 2MB
+		fileSize: FILE_SIZE_LIMITS.IMAGE, // 2MB
 		files: 2,
 	},
 })
 
+/**
+ * @constant uploadVideo
+ * @description Multer configuration for video uploads
+ * @type {Object}
+ * @property {Object} storage - Storage configuration
+ * @property {Function} fileFilter - Video file filter
+ * @property {Object} limits - File size and count limits
+ * @note Maximum file size: 100MB per video
+ * @note Maximum files: 1 video per request
+ * @note Supported formats: MP4, AVI, MKV, MOV, WMV
+ * @example uploadVideo.single('videoFile')
+ */
 // For video files - 100MB limit
 const uploadVideo = multer({
 	storage,
 	fileFilter: videoFileFilter,
 	limits: {
-		fileSize: 100 * 1024 * 1024, // 100MB for videos
+		fileSize: FILE_SIZE_LIMITS.VIDEO, // 100MB for videos
 		files: 1,
 	},
 })
 
+/**
+ * @constant uploadVideoWithThumbnail
+ * @description Multer configuration for video and thumbnail uploads
+ * @type {Object}
+ * @property {Object} storage - Storage configuration
+ * @property {Function} fileFilter - Combined video and image file filter
+ * @property {Object} limits - File size and count limits
+ * @note Maximum file size: 100MB (videos), 2MB (thumbnails)
+ * @note Maximum files: 2 files per request (1 video + 1 thumbnail)
+ * @note Video formats: MP4, AVI, MKV, MOV, WMV
+ * @note Image formats: JPEG, PNG, GIF, WebP
+ * @note Field names: 'videoFile' for video, 'thumbnail' for image
+ * @example uploadVideoWithThumbnail.fields([{name: 'videoFile', maxCount: 1}, {name: 'thumbnail', maxCount: 1}])
+ */
 // For mixed video + thumbnail uploads
 const uploadVideoWithThumbnail = multer({
 	storage,
@@ -255,21 +339,32 @@ const uploadVideoWithThumbnail = multer({
 					cb(new Error('Video file must be MP4, AVI, MKV, MOV, or WMV'), false)
 				}
 			} else if (file.fieldname === 'thumbnail') {
-				const allowedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+				const allowedImageTypes = [
+					'image/jpeg',
+					'image/jpg',
+					'image/png',
+					'image/gif',
+					'image/webp',
+				]
 				if (allowedImageTypes.includes(file.mimetype)) {
 					cb(null, true)
 				} else {
 					cb(new Error('Thumbnail must be JPEG, PNG, GIF, or WebP'), false)
 				}
 			} else {
-				cb(new Error(`Invalid field name: ${file.fieldname}. Only videoFile and thumbnail are allowed`), false)
+				cb(
+					new Error(
+						`Invalid field name: ${file.fieldname}. Only videoFile and thumbnail are allowed`
+					),
+					false
+				)
 			}
 		} catch (error) {
 			cb(new Error('File validation failed'), false)
 		}
 	},
 	limits: {
-		fileSize: 100 * 1024 * 1024, // 100MB max (will validate per field)
+		fileSize: FILE_SIZE_LIMITS.VIDEO, // 100MB max (will validate per field)
 		files: 2, // Video + Thumbnail
 	},
 })
@@ -279,52 +374,163 @@ const uploadVideoWithThumbnail = multer({
 //   storage,
 //   fileFilter: documentFileFilter,
 //   limits: {
-//     fileSize: 10 * 1024 * 1024, // 10MB
+//     fileSize: FILE_SIZE_LIMITS.DOCUMENT, // 10MB
 //     files: 3,
 //   },
 // })
 
 /**
- * Custom middleware to validate file sizes based on field names
- * Use this with uploadVideoWithThumbnail for field-specific size limits
+ * @function validateFieldSpecificSizes
+ * @description Custom middleware to validate file sizes based on field names
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * @returns {Promise<void>}
+ * @throws {ApiError} File size exceeds limit for specific field
+ * @note Use this with uploadVideoWithThumbnail for field-specific size limits
+ * @note Video files: 100MB limit, Image files: 2MB limit
+ * @note Uses asyncHandler for consistent error handling pattern
+ * @example router.post('/upload', uploadVideoWithThumbnail.fields(...), validateFieldSpecificSizes, controller)
  */
-const validateFieldSpecificSizes = (req, res, next) => {
-	try {
-		if (req.files) {
-			// Validate video file size (100MB limit)
-			if (req.files.videoFile && req.files.videoFile[0]) {
-				const videoFile = req.files.videoFile[0]
-				const videoSizeLimit = 100 * 1024 * 1024 // 100MB
-				if (videoFile.size > videoSizeLimit) {
-					return res.status(400).json({
-						success: false,
-						message: 'Video file size cannot exceed 100MB',
-						statusCode: 400,
-					})
-				}
-			}
-
-			// Validate thumbnail file size (2MB limit)
-			if (req.files.thumbnail && req.files.thumbnail[0]) {
-				const thumbnailFile = req.files.thumbnail[0]
-				const thumbnailSizeLimit = 2 * 1024 * 1024 // 2MB
-				if (thumbnailFile.size > thumbnailSizeLimit) {
-					return res.status(400).json({
-						success: false,
-						message: 'Thumbnail file size cannot exceed 2MB',
-						statusCode: 400,
-					})
-				}
+const validateFieldSpecificSizes = asyncHandler(async (req, res, next) => {
+	if (req.files) {
+		// Validate video file size (100MB limit)
+		if (req.files.videoFile && req.files.videoFile[0]) {
+			const videoFile = req.files.videoFile[0]
+			if (videoFile.size > FILE_SIZE_LIMITS.VIDEO) {
+				throw new ApiError(400, `Video file size cannot exceed ${FILE_SIZE_DISPLAY.VIDEO}`)
 			}
 		}
-		next()
-	} catch (error) {
-		res.status(500).json({
-			success: false,
-			message: 'File size validation failed',
-			statusCode: 500,
+
+		// Validate thumbnail file size (2MB limit)
+		if (req.files.thumbnail && req.files.thumbnail[0]) {
+			const thumbnailFile = req.files.thumbnail[0]
+			if (thumbnailFile.size > FILE_SIZE_LIMITS.IMAGE) {
+				throw new ApiError(400, `Thumbnail file size cannot exceed ${FILE_SIZE_DISPLAY.IMAGE}`)
+			}
+		}
+	}
+	next()
+})
+
+/**
+ * @function getMulterErrorMessage
+ * @description Helper function to get user-friendly multer error message
+ * @param {Error} err - Multer error object
+ * @returns {string} User-friendly error message
+ * @note Follows project's error handling pattern
+ * @note Provides field-specific size limit information
+ * @example const message = getMulterErrorMessage(multerError)
+ */
+const getMulterErrorMessage = err => {
+	let message = 'File upload error'
+
+	switch (err.code) {
+		case 'LIMIT_FILE_SIZE':
+			const fieldName = err.field || 'file'
+			let sizeLimit = FILE_SIZE_DISPLAY.IMAGE // default
+
+			// Get specific size limits based on field
+			if (fieldName === 'videoFile') {
+				sizeLimit = FILE_SIZE_DISPLAY.VIDEO
+			} else if (
+				fieldName === 'avatar' ||
+				fieldName === 'coverImage' ||
+				fieldName === 'thumbnail'
+			) {
+				sizeLimit = FILE_SIZE_DISPLAY.IMAGE
+			}
+
+			message = `File size too large for ${fieldName}. Maximum allowed size is ${sizeLimit}.`
+			break
+
+		case 'LIMIT_FILE_COUNT':
+			message = 'Too many files uploaded. Please check the file count limit.'
+			break
+
+		case 'LIMIT_FIELD_KEY':
+			message = 'Field name is too long.'
+			break
+
+		case 'LIMIT_FIELD_VALUE':
+			message = 'Field value is too long.'
+			break
+
+		case 'LIMIT_FIELD_COUNT':
+			message = 'Too many fields in the form.'
+			break
+
+		case 'LIMIT_UNEXPECTED_FILE':
+			message = `Unexpected field: ${err.field}. Please check the field name.`
+			break
+
+		case 'MISSING_FIELD_NAME':
+			message = 'Missing field name in the form.'
+			break
+
+		default:
+			message = `File upload error: ${err.message}`
+	}
+
+	return message
+}
+
+/**
+ * @function handleMulterError
+ * @description Middleware to handle Multer errors and provide user-friendly error messages
+ * @param {Error} err - Error object from previous middleware
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * @returns {void}
+ * @throws {ApiError} Formatted multer error with user-friendly message
+ * @note Use this after your multer middleware to catch and format errors
+ * @note Follows project's error handling pattern with ApiError
+ * @note Automatically cleans up uploaded files on error
+ * @example router.post('/upload', uploadImages.single('avatar'), handleMulterError, controller)
+ */
+const handleMulterError = (err, req, res, next) => {
+	// Clean up any uploaded files if there was an error
+	if (req.file || req.files) {
+		cleanupTempFiles(req)
+	}
+
+	if (err instanceof multer.MulterError) {
+		const message = getMulterErrorMessage(err)
+		const apiError = new ApiError(400, message, [err.code])
+
+		// Use the same error response format as asyncHandler
+		return res.status(apiError.statusCode).json({
+			statusCode: apiError.statusCode,
+			data: apiError.data,
+			message: apiError.message,
+			success: apiError.success,
+			errors: apiError.errors,
 		})
 	}
+
+	// Handle other file upload related errors
+	if (
+		err &&
+		err.message &&
+		(err.message.includes('file') ||
+			err.message.includes('upload') ||
+			err.message.includes('image') ||
+			err.message.includes('video'))
+	) {
+		const apiError = new ApiError(400, err.message)
+
+		return res.status(apiError.statusCode).json({
+			statusCode: apiError.statusCode,
+			data: apiError.data,
+			message: apiError.message,
+			success: apiError.success,
+			errors: apiError.errors,
+		})
+	}
+
+	// If it's not a multer error, pass it to the next error handler
+	next(err)
 }
 
 export {
@@ -334,4 +540,5 @@ export {
 	uploadVideo,
 	uploadVideoWithThumbnail,
 	validateFieldSpecificSizes,
+	handleMulterError,
 }

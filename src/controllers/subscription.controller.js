@@ -1,6 +1,6 @@
 import mongoose, { isValidObjectId } from 'mongoose'
 import { Subscription } from '../models/index.js'
-import { asyncHandler, ApiError, ApiResponse } from '../utils/index.js'
+import { asyncHandler, ApiError, ApiResponse, paginateArray } from '../utils/index.js'
 
 /**
  * Get all channels that the current user is subscribed to
@@ -8,25 +8,45 @@ import { asyncHandler, ApiError, ApiResponse } from '../utils/index.js'
  * @access Private
  */
 const getSubscribedChannels = asyncHandler(async (req, res) => {
+	const { page = 1, limit = 10 } = req.query
+
 	// Validate user authentication
 	if (!req.user?._id) {
 		throw new ApiError(401, 'User not authenticated.')
 	}
 
-	// Find all subscriptions for the current user and populate channel details
-	const subscriptions = await Subscription.find({
-		subscriber: new mongoose.Types.ObjectId(req.user._id),
-	}).populate('channel', '_id username fullName avatar')
+	// Validate pagination parameters
+	const pageNumber = parseInt(page)
+	const limitNumber = parseInt(limit)
 
-	// Check if any subscriptions exist
-	if (!subscriptions || subscriptions.length === 0) {
-		return res.status(200).json(new ApiResponse(200, { channels: [] }, 'No subscribed channels found.'))
+	if (pageNumber < 1) {
+		throw new ApiError(400, 'Page number must be greater than 0.')
 	}
 
-	// Extract channel data from subscriptions
-	const channels = subscriptions.map(subscription => subscription.channel)
+	if (limitNumber < 1 || limitNumber > 100) {
+		throw new ApiError(400, 'Limit must be between 1 and 100.')
+	}
 
-	res.status(200).json(new ApiResponse(200, { channels }, 'Subscribed channels list fetched successfully.'))
+	try {
+		// Find all subscribed channels and populate channel details
+		const subscriptions = await Subscription.find({
+			subscriber: new mongoose.Types.ObjectId(req.user._id),
+		})
+			.populate('channel', '_id username fullName avatar')
+			.sort({ createdAt: -1 }) // Most recent subscriptions first
+
+		// Extract channel data from subscriptions
+		const channels = subscriptions.map(subscription => subscription.channel)
+
+		// Use paginateArray utility for pagination
+		const paginationInfo = paginateArray(channels, pageNumber, limitNumber, 'channels')
+
+		res
+			.status(200)
+			.json(new ApiResponse(200, paginationInfo, 'Subscribed channels list fetched successfully.'))
+	} catch (error) {
+		throw new ApiError(500, 'Failed to fetch subscribed channels.')
+	}
 })
 
 /**
@@ -47,7 +67,9 @@ const getSubscriberCount = asyncHandler(async (req, res) => {
 		channel: channelId,
 	})
 
-	res.status(200).json(new ApiResponse(200, { subscriberCount }, 'Subscriber count fetched successfully.'))
+	res
+		.status(200)
+		.json(new ApiResponse(200, { subscriberCount }, 'Subscriber count fetched successfully.'))
 })
 
 /**
@@ -83,7 +105,9 @@ const toggleSubscription = asyncHandler(async (req, res) => {
 		if (existingSubscription) {
 			// Unsubscribe: Remove existing subscription
 			await Subscription.findByIdAndDelete(existingSubscription._id)
-			res.status(200).json(new ApiResponse(200, { isSubscribed: false }, 'Unsubscribed successfully.'))
+			res
+				.status(200)
+				.json(new ApiResponse(200, { isSubscribed: false }, 'Unsubscribed successfully.'))
 		} else {
 			// Subscribe: Create new subscription
 			await Subscription.create({
@@ -108,6 +132,7 @@ const toggleSubscription = asyncHandler(async (req, res) => {
  */
 const getUserChannelSubscribers = asyncHandler(async (req, res) => {
 	const { channelId } = req.params
+	const { page = 1, limit = 10 } = req.query
 
 	// Validate user authentication
 	if (!req.user?._id) {
@@ -124,21 +149,35 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
 		throw new ApiError(403, 'You are not authorized to view this resource.')
 	}
 
+	// Validate pagination parameters
+	const pageNumber = parseInt(page)
+	const limitNumber = parseInt(limit)
+
+	if (pageNumber < 1) {
+		throw new ApiError(400, 'Page number must be greater than 0.')
+	}
+
+	if (limitNumber < 1 || limitNumber > 100) {
+		throw new ApiError(400, 'Limit must be between 1 and 100.')
+	}
+
 	try {
-		// Find all subscribers for the channel and populate subscriber details
+		// Find all subscribers and populate subscriber details
 		const subscriptions = await Subscription.find({
 			channel: channelId,
-		}).populate('subscriber', '_id username fullName avatar')
-
-		// Check if any subscribers exist
-		if (!subscriptions || subscriptions.length === 0) {
-			return res.status(200).json(new ApiResponse(200, { subscribers: [] }, 'No subscribers found.'))
-		}
+		})
+			.populate('subscriber', '_id username fullName avatar')
+			.sort({ createdAt: -1 }) // Most recent subscribers first
 
 		// Extract subscriber data from subscriptions
 		const subscribers = subscriptions.map(subscription => subscription.subscriber)
 
-		res.status(200).json(new ApiResponse(200, { subscribers }, 'Subscribers list fetched successfully.'))
+		// Use paginateArray utility for pagination
+		const paginationInfo = paginateArray(subscribers, pageNumber, limitNumber, 'subscribers')
+
+		res
+			.status(200)
+			.json(new ApiResponse(200, paginationInfo, 'Subscribers list fetched successfully.'))
 	} catch (error) {
 		throw new ApiError(500, 'Failed to fetch subscribers list.')
 	}

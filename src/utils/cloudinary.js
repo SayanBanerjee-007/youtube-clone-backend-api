@@ -33,11 +33,11 @@ const uploadOnCloudinary = async filePath => {
 			resource_type: 'auto',
 		})
 
-		console.log('File uploaded successfully to Cloudinary:', {
-			public_id: response.public_id,
-			secure_url: response.secure_url,
-			resource_type: response.resource_type,
-		})
+		// console.log('File uploaded successfully to Cloudinary:', {
+		// 	public_id: response.public_id,
+		// 	secure_url: response.secure_url,
+		// 	resource_type: response.resource_type,
+		// })
 
 		return response
 	} catch (error) {
@@ -99,10 +99,10 @@ const deleteVideoFromCloudinary = async url => {
 			resource_type: 'video',
 		})
 
-		console.log('Video deleted successfully from Cloudinary:', {
-			public_id: publicId,
-			result: response.result,
-		})
+		// console.log('Video deleted successfully from Cloudinary:', {
+		// 	public_id: publicId,
+		// 	result: response.result,
+		// })
 
 		return response
 	} catch (error) {
@@ -138,10 +138,10 @@ const deleteImageFromCloudinary = async url => {
 		// Delete image (default resource type)
 		const response = await cloudinary.uploader.destroy(publicId)
 
-		console.log('Image deleted successfully from Cloudinary:', {
-			public_id: publicId,
-			result: response.result,
-		})
+		// console.log('Image deleted successfully from Cloudinary:', {
+		// 	public_id: publicId,
+		// 	result: response.result,
+		// })
 
 		return response
 	} catch (error) {

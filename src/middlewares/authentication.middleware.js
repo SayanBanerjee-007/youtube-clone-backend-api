@@ -80,7 +80,13 @@ const requireGuest = asyncHandler(async (req, res, next) => {
 	if (user) {
 		return res
 			.status(409)
-			.json(new ApiResponse(409, null, 'Already authenticated. Please log out first to access this resource.'))
+			.json(
+				new ApiResponse(
+					409,
+					null,
+					'Already authenticated. Please log out first to access this resource.'
+				)
+			)
 	}
 
 	next()

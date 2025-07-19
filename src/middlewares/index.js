@@ -7,6 +7,7 @@ import {
 	uploadVideo,
 	uploadVideoWithThumbnail,
 	validateFieldSpecificSizes,
+	handleMulterError,
 } from './multer.middleware.js'
 
 export {
@@ -20,4 +21,5 @@ export {
 	uploadVideo,
 	uploadVideoWithThumbnail,
 	validateFieldSpecificSizes,
+	handleMulterError,
 }

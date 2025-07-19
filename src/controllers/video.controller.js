@@ -17,12 +17,22 @@ import {
  */
 // TODO : GET all isPublished : false videos if user is the owner
 const getAllVideos = asyncHandler(async (req, res) => {
-	const { page = 1, limit = 10, keyword, sortBy = 'createdAt', sortType = 'desc', userId } = req.query
+	const {
+		page = 1,
+		limit = 10,
+		keyword,
+		sortBy = 'createdAt',
+		sortType = 'desc',
+		userId,
+	} = req.query
 
 	// Validate sortBy field against allowed values
 	const validSortByFields = ['createdAt', 'views', 'likesCount']
 	if (!validSortByFields.includes(sortBy)) {
-		throw new ApiError(400, `Invalid sortBy field. Valid fields are: ${validSortByFields.join(', ')}`)
+		throw new ApiError(
+			400,
+			`Invalid sortBy field. Valid fields are: ${validSortByFields.join(', ')}`
+		)
 	}
 
 	// Validate sortType to ensure proper ordering
@@ -201,16 +211,25 @@ const publishAVideo = asyncHandler(async (req, res) => {
 		})
 	} catch (error) {
 		// Cleanup uploaded files if database operation fails
-		await Promise.allSettled([deleteVideoFromCloudinary(videoFile.url), deleteImageFromCloudinary(thumbnail.url)])
+		await Promise.allSettled([
+			deleteVideoFromCloudinary(videoFile.url),
+			deleteImageFromCloudinary(thumbnail.url),
+		])
 		throw new ApiError(500, 'Failed to save video information. Please try again.')
 	}
 
 	// Fetch the created video to return complete information
-	const uploadedVideo = await Video.findById(video._id).populate('owner', 'username fullName avatar')
+	const uploadedVideo = await Video.findById(video._id).populate(
+		'owner',
+		'username fullName avatar'
+	)
 
 	if (!uploadedVideo) {
 		// Cleanup if video retrieval fails
-		await Promise.allSettled([deleteVideoFromCloudinary(videoFile.url), deleteImageFromCloudinary(thumbnail.url)])
+		await Promise.allSettled([
+			deleteVideoFromCloudinary(videoFile.url),
+			deleteImageFromCloudinary(thumbnail.url),
+		])
 		throw new ApiError(500, 'Failed to retrieve uploaded video information.')
 	}
 
@@ -303,7 +322,11 @@ const getVideoById = asyncHandler(async (req, res) => {
 		// Increment view count if applicable
 		if (shouldIncrementViews) {
 			try {
-				await Video.findByIdAndUpdate(videoId, { $inc: { views: 1 } }, { validateBeforeSave: false })
+				await Video.findByIdAndUpdate(
+					videoId,
+					{ $inc: { views: 1 } },
+					{ validateBeforeSave: false }
+				)
 				videoData[0].views += 1 // Update the returned data
 			} catch (error) {
 				// Don't fail the request if view increment fails
@@ -337,7 +360,10 @@ const updateVideo = asyncHandler(async (req, res) => {
 
 	// Ensure at least one field is being updated
 	if (!req.file && !title?.trim() && !description?.trim()) {
-		throw new ApiError(400, 'At least one field (title, description, or thumbnail) must be provided for update.')
+		throw new ApiError(
+			400,
+			'At least one field (title, description, or thumbnail) must be provided for update.'
+		)
 	}
 
 	// Validate field lengths if provided
@@ -437,7 +463,10 @@ const deleteVideo = asyncHandler(async (req, res) => {
 
 	// Delete associated files from cloudinary
 	try {
-		await Promise.allSettled([deleteVideoFromCloudinary(videoFileUrl), deleteImageFromCloudinary(thumbnailUrl)])
+		await Promise.allSettled([
+			deleteVideoFromCloudinary(videoFileUrl),
+			deleteImageFromCloudinary(thumbnailUrl),
+		])
 	} catch (error) {
 		// Log error but don't fail the request since video is already deleted from DB
 		console.error('Failed to delete some files from cloud storage:', error)
@@ -445,7 +474,9 @@ const deleteVideo = asyncHandler(async (req, res) => {
 
 	// TODO: Consider deleting related data (likes, comments, etc.) in a background job
 
-	res.status(200).json(new ApiResponse(200, { deletedVideoId: videoId }, 'Video deleted successfully.'))
+	res
+		.status(200)
+		.json(new ApiResponse(200, { deletedVideoId: videoId }, 'Video deleted successfully.'))
 })
 
 /**
@@ -481,7 +512,9 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
 		throw new ApiError(500, 'Failed to update publish status. Please try again.')
 	}
 
-	const statusMessage = video.isPublished ? 'Video published successfully.' : 'Video unpublished successfully.'
+	const statusMessage = video.isPublished
+		? 'Video published successfully.'
+		: 'Video unpublished successfully.'
 
 	res.status(200).json(
 		new ApiResponse(

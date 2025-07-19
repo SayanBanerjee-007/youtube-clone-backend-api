@@ -125,8 +125,6 @@ const updatePlaylist = asyncHandler(async (req, res) => {
 		throw new ApiError(403, 'You are not authorized to update this playlist.')
 	}
 
-	console.log(isPublic)
-
 	// Update fields conditionally
 	if (name) playlist.name = name.trim()
 	if (description !== undefined) playlist.description = description.trim()

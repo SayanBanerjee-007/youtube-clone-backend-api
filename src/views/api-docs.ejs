@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Clone API - Interactive Documentation v3</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Prism.js for syntax highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/styles.css">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+
+    <!-- Meta tags -->
+    <meta name="description"
+        content="Interactive API documentation for YouTube Clone backend with modern UI and comprehensive testing features">
+    <meta name="keywords" content="API, Documentation, YouTube Clone, REST API, Interactive, Node.js, Express">
+    <meta name="author" content="YouTube Clone API Team">
+    <meta name="theme-color" content="#6366f1">
+</head>
+
+<body data-theme="dark">
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Loading API Documentation...</p>
+            <p class="loading-credit">This API docs page is completely created by Claude Sonnet 4 and instructed by
+                Sayan Banerjee</p>
+        </div>
+    </div>
+
+    <!-- App Container -->
+    <div class="app" id="app">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fab fa-youtube"></i>
+                    <span class="logo-text">API v3</span>
+                </div>
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+
+            <div class="sidebar-content">
+                <!-- Auth Status -->
+                <div class="auth-status" id="authStatus">
+                    <div class="status-indicator" id="statusIndicator">
+                        <i class="fas fa-circle"></i>
+                        <span>Not Authenticated</span>
+                    </div>
+                    <button class="auth-btn" id="authBtn" title="Login / Logout">
+                        <i class="fas fa-sign-in-alt"></i>
+                    </button>
+                </div>
+
+                <!-- Search -->
+                <div class="search-container">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search endpoints..." id="searchInput">
+                        <button class="search-clear" id="searchClear">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Navigation Tree -->
+                <nav class="nav-tree" id="navTree">
+                    <!-- Health Check -->
+                    <div class="nav-section">
+                        <div class="nav-folder" data-section="health">
+                            <div class="folder-header">
+                                <i class="fas fa-heartbeat folder-icon"></i>
+                                <span class="folder-name">Health Check</span>
+                                <i class="fas fa-chevron-right expand-icon"></i>
+                            </div>
+                            <div class="folder-content">
+                                <div class="nav-item" data-endpoint="health-check">
+                                    <span class="method get">GET</span>
+                                    <span class="endpoint-name">System Status</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Authentication -->
+                    <div class="nav-section">
+                        <div class="nav-folder expanded" data-section="auth">
+                            <div class="folder-header">
+                                <i class="fas fa-shield-alt folder-icon"></i>
+                                <span class="folder-name">Authentication</span>
+                                <i class="fas fa-chevron-right expand-icon"></i>
+                            </div>
+                            <div class="folder-content">
+                                <div class="nav-item active" data-endpoint="auth-register">
+                                    <span class="method post">POST</span>
+                                    <span class="endpoint-name">Register User</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="auth-login">
+                                    <span class="method post">POST</span>
+                                    <span class="endpoint-name">Login User</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="auth-logout">
+                                    <span class="method delete">DELETE</span>
+                                    <span class="endpoint-name">Logout User</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="auth-refresh">
+                                    <span class="method post">POST</span>
+                                    <span class="endpoint-name">Refresh Token</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User Management -->
+                    <div class="nav-section">
+                        <div class="nav-folder" data-section="users">
+                            <div class="folder-header">
+                                <i class="fas fa-users folder-icon"></i>
+                                <span class="folder-name">User Management</span>
+                                <i class="fas fa-chevron-right expand-icon"></i>
+                            </div>
+                            <div class="folder-content">
+                                <div class="nav-item" data-endpoint="user-profile">
+                                    <span class="method get">GET</span>
+                                    <span class="endpoint-name">Current User</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="user-update">
+                                    <span class="method patch">PATCH</span>
+                                    <span class="endpoint-name">Update Account</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="user-password">
+                                    <span class="method patch">PATCH</span>
+                                    <span class="endpoint-name">Change Password</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="user-avatar">
+                                    <span class="method patch">PATCH</span>
+                                    <span class="endpoint-name">Update Avatar</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="user-cover">
+                                    <span class="method patch">PATCH</span>
+                                    <span class="endpoint-name">Update Cover</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="user-channel">
+                                    <span class="method get">GET</span>
+                                    <span class="endpoint-name">User Channel</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="user-history">
+                                    <span class="method get">GET</span>
+                                    <span class="endpoint-name">Watch History</span>
+                                </div>
+                                <div class="nav-item danger-item" data-endpoint="user-delete-account">
+                                    <span class="method delete">DELETE</span>
+                                    <span class="endpoint-name">Delete Account</span>
+                                    <i class="fas fa-exclamation-triangle danger-icon" title="Irreversible action"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Videos -->
+                    <div class="nav-section">
+                        <div class="nav-folder" data-section="videos">
+                            <div class="folder-header">
+                                <i class="fas fa-video folder-icon"></i>
+                                <span class="folder-name">Videos</span>
+                                <i class="fas fa-chevron-right expand-icon"></i>
+                            </div>
+                            <div class="folder-content">
+                                <div class="nav-item" data-endpoint="video-list">
+                                    <span class="method get">GET</span>
+                                    <span class="endpoint-name">Get All Videos</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="video-upload">
+                                    <span class="method post">POST</span>
+                                    <span class="endpoint-name">Upload Video</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="video-detail">
+                                    <span class="method get">GET</span>
+                                    <span class="endpoint-name">Get Video by ID</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="video-update">
+                                    <span class="method patch">PATCH</span>
+                                    <span class="endpoint-name">Update Video</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="video-delete">
+                                    <span class="method delete">DELETE</span>
+                                    <span class="endpoint-name">Delete Video</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="video-publish">
+                                    <span class="method patch">PATCH</span>
+                                    <span class="endpoint-name">Toggle Publish</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comments -->
+                    <div class="nav-section">
+                        <div class="nav-folder" data-section="comments">
+                            <div class="folder-header">
+                                <i class="fas fa-comments folder-icon"></i>
+                                <span class="folder-name">Comments</span>
+                                <i class="fas fa-chevron-right expand-icon"></i>
+                            </div>
+                            <div class="folder-content">
+                                <div class="nav-item" data-endpoint="comment-list">
+                                    <span class="method get">GET</span>
+                                    <span class="endpoint-name">Get Comments</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="comment-add">
+                                    <span class="method post">POST</span>
+                                    <span class="endpoint-name">Add Comment</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="comment-update">
+                                    <span class="method patch">PATCH</span>
+                                    <span class="endpoint-name">Update Comment</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="comment-delete">
+                                    <span class="method delete">DELETE</span>
+                                    <span class="endpoint-name">Delete Comment</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Likes -->
+                    <div class="nav-section">
+                        <div class="nav-folder" data-section="likes">
+                            <div class="folder-header">
+                                <i class="fas fa-heart folder-icon"></i>
+                                <span class="folder-name">Likes</span>
+                                <i class="fas fa-chevron-right expand-icon"></i>
+                            </div>
+                            <div class="folder-content">
+                                <div class="nav-item" data-endpoint="like-video">
+                                    <span class="method post">POST</span>
+                                    <span class="endpoint-name">Toggle Video Like</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="like-comment">
+                                    <span class="method post">POST</span>
+                                    <span class="endpoint-name">Toggle Comment Like</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="like-tweet">
+                                    <span class="method post">POST</span>
+                                    <span class="endpoint-name">Toggle Tweet Like</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="like-list">
+                                    <span class="method get">GET</span>
+                                    <span class="endpoint-name">Get Liked Videos</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Subscriptions -->
+                    <div class="nav-section">
+                        <div class="nav-folder" data-section="subscriptions">
+                            <div class="folder-header">
+                                <i class="fas fa-bell folder-icon"></i>
+                                <span class="folder-name">Subscriptions</span>
+                                <i class="fas fa-chevron-right expand-icon"></i>
+                            </div>
+                            <div class="folder-content">
+                                <div class="nav-item" data-endpoint="subscription-toggle">
+                                    <span class="method post">POST</span>
+                                    <span class="endpoint-name">Toggle Subscription</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="subscription-count">
+                                    <span class="method get">GET</span>
+                                    <span class="endpoint-name">Get Subscriber Count</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="subscription-subscribers">
+                                    <span class="method get">GET</span>
+                                    <span class="endpoint-name">Get Subscribers</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="subscription-subscribed">
+                                    <span class="method get">GET</span>
+                                    <span class="endpoint-name">Get Subscriptions</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Playlists -->
+                    <div class="nav-section">
+                        <div class="nav-folder" data-section="playlists">
+                            <div class="folder-header">
+                                <i class="fas fa-list folder-icon"></i>
+                                <span class="folder-name">Playlists</span>
+                                <i class="fas fa-chevron-right expand-icon"></i>
+                            </div>
+                            <div class="folder-content">
+                                <div class="nav-item" data-endpoint="playlist-create">
+                                    <span class="method post">POST</span>
+                                    <span class="endpoint-name">Create Playlist</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="playlist-user">
+                                    <span class="method get">GET</span>
+                                    <span class="endpoint-name">User Playlists</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="playlist-detail">
+                                    <span class="method get">GET</span>
+                                    <span class="endpoint-name">Get Playlist</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="playlist-update">
+                                    <span class="method patch">PATCH</span>
+                                    <span class="endpoint-name">Update Playlist</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="playlist-delete">
+                                    <span class="method delete">DELETE</span>
+                                    <span class="endpoint-name">Delete Playlist</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="playlist-add-video">
+                                    <span class="method patch">PATCH</span>
+                                    <span class="endpoint-name">Add Video</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="playlist-remove-video">
+                                    <span class="method patch">PATCH</span>
+                                    <span class="endpoint-name">Remove Video</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tweets -->
+                    <div class="nav-section">
+                        <div class="nav-folder" data-section="tweets">
+                            <div class="folder-header">
+                                <i class="fab fa-twitter folder-icon"></i>
+                                <span class="folder-name">Tweets</span>
+                                <i class="fas fa-chevron-right expand-icon"></i>
+                            </div>
+                            <div class="folder-content">
+                                <div class="nav-item" data-endpoint="tweet-create">
+                                    <span class="method post">POST</span>
+                                    <span class="endpoint-name">Create Tweet</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="tweet-user">
+                                    <span class="method get">GET</span>
+                                    <span class="endpoint-name">User Tweets</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="tweet-update">
+                                    <span class="method patch">PATCH</span>
+                                    <span class="endpoint-name">Update Tweet</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="tweet-delete">
+                                    <span class="method delete">DELETE</span>
+                                    <span class="endpoint-name">Delete Tweet</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dashboard -->
+                    <div class="nav-section">
+                        <div class="nav-folder" data-section="dashboard">
+                            <div class="folder-header">
+                                <i class="fas fa-chart-bar folder-icon"></i>
+                                <span class="folder-name">Dashboard</span>
+                                <i class="fas fa-chevron-right expand-icon"></i>
+                            </div>
+                            <div class="folder-content">
+                                <div class="nav-item" data-endpoint="dashboard-stats">
+                                    <span class="method get">GET</span>
+                                    <span class="endpoint-name">Channel Stats</span>
+                                </div>
+                                <div class="nav-item" data-endpoint="dashboard-videos">
+                                    <span class="method get">GET</span>
+                                    <span class="endpoint-name">Channel Videos</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+
+            <!-- Theme Toggle -->
+            <div class="sidebar-footer">
+                <button class="theme-toggle" id="themeToggle" title="Toggle Theme">
+                    <i class="fas fa-moon"></i>
+                    <span class="theme-text">Dark Mode</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="content-header">
+                <div class="breadcrumb" id="breadcrumb">
+                    <span class="breadcrumb-item">API</span>
+                    <i class="fas fa-chevron-right"></i>
+                    <span class="breadcrumb-item">Authentication</span>
+                    <i class="fas fa-chevron-right"></i>
+                    <span class="breadcrumb-item current">Register User</span>
+                </div>
+                <div class="header-actions">
+                    <button class="action-btn" id="copyUrlBtn" title="Copy Endpoint URL">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                    <button class="action-btn" id="exportBtn" title="Export as cURL">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button class="action-btn" id="githubBtn" title="View on GitHub">
+                        <i class="fab fa-github"></i>
+                    </button>
+                    <button class="action-btn" id="helpBtn" title="Help">
+                        <i class="fas fa-question-circle"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- API Form Section -->
+            <section class="api-form-section" id="apiFormSection">
+                <div class="form-container">
+                    <!-- Endpoint Info -->
+                    <div class="endpoint-info" id="endpointInfo">
+                        <div class="endpoint-header">
+                            <span class="method post" id="methodBadge">POST</span>
+                            <span class="endpoint-url" id="endpointUrl">/api/v1/users/register</span>
+                            <span class="auth-badge" id="authBadge">Public</span>
+                        </div>
+                        <p class="endpoint-description" id="endpointDescription">
+                            Register a new user account with required avatar and optional cover image upload.
+                        </p>
+                    </div>
+
+                    <!-- Form -->
+                    <div class="form-content" id="formContent">
+                        <!-- Dynamic form content will be inserted here -->
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="form-actions">
+                        <button class="btn btn-primary" id="submitBtn">
+                            <i class="fas fa-paper-plane"></i>
+                            <span>Send Request</span>
+                            <div class="loading-spinner" style="display: none;">
+                                <div class="spinner-small"></div>
+                            </div>
+                        </button>
+                        <button class="btn btn-secondary" id="clearBtn">
+                            <i class="fas fa-eraser"></i>
+                            <span>Clear Form</span>
+                        </button>
+                        <button class="btn btn-outline" id="fillExampleBtn">
+                            <i class="fas fa-magic"></i>
+                            <span>Fill Example</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Response Panel -->
+        <aside class="response-panel" id="responsePanel">
+            <div class="response-header">
+                <div class="response-title">
+                    <i class="fas fa-terminal"></i>
+                    <span>Response</span>
+                </div>
+                <div class="response-actions">
+                    <button class="response-btn" id="copyResponseBtn" title="Copy Response">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                    <button class="response-btn" id="clearResponseBtn" title="Clear Response">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="response-content" id="responseContent">
+                <div class="response-placeholder">
+                    <i class="fas fa-rocket"></i>
+                    <h3>No Response Yet</h3>
+                    <p>Send a request to see the response here</p>
+                </div>
+            </div>
+
+            <!-- Response Status -->
+            <div class="response-status" id="responseStatus" style="display: none;">
+                <div class="status-info">
+                    <span class="status-code" id="statusCode">200</span>
+                    <span class="status-text" id="statusText">OK</span>
+                </div>
+                <div class="response-meta">
+                    <span class="response-time" id="responseTime">0ms</span>
+                    <span class="response-size" id="responseSize">0 B</span>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Modals -->
+    <div class="modal-overlay" id="modalOverlay" style="display: none;">
+        <div class="modal" id="helpModal">
+            <div class="modal-header">
+                <h3>API Documentation Help</h3>
+                <button class="modal-close" id="modalClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-content">
+                <div class="help-section">
+                    <h4><i class="fas fa-keyboard"></i> Keyboard Shortcuts</h4>
+                    <div class="shortcuts">
+                        <div class="shortcut">
+                            <kbd>Ctrl</kbd> + <kbd>Enter</kbd>
+                            <span>Send Request</span>
+                        </div>
+                        <div class="shortcut">
+                            <kbd>Ctrl</kbd> + <kbd>K</kbd>
+                            <span>Focus Search</span>
+                        </div>
+                        <div class="shortcut">
+                            <kbd>Esc</kbd>
+                            <span>Clear Form</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="help-section">
+                    <h4><i class="fas fa-info-circle"></i> Tips</h4>
+                    <ul>
+                        <li>Use the search box to quickly find endpoints</li>
+                        <li>Click on folder icons to expand/collapse sections</li>
+                        <li>Authentication status is shown in the sidebar</li>
+                        <li>Response times and sizes are displayed for each request</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Account Confirmation Modal -->
+    <div class="modal-overlay" id="deleteAccountModalOverlay" style="display: none;">
+        <div class="modal danger-modal" id="deleteAccountModal">
+            <div class="modal-header">
+                <h3><i class="fas fa-exclamation-triangle"></i> Delete Account</h3>
+                <button class="modal-close" id="deleteAccountModalClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-content">
+                <div class="danger-warning">
+                    <h4><i class="fas fa-skull-crossbones"></i> This action is irreversible!</h4>
+                    <p>Deleting your account will permanently remove:</p>
+                    <ul>
+                        <li>Your profile and credentials</li>
+                        <li>All videos you've uploaded</li>
+                        <li>All comments you've made</li>
+                        <li>All tweets you've created</li>
+                        <li>All playlists you've created</li>
+                        <li>All your likes and subscriptions</li>
+                        <li>All associated files from cloud storage</li>
+                    </ul>
+                </div>
+                <div class="confirmation-form">
+                    <label for="confirmPassword">Enter your password to confirm:</label>
+                    <input type="password" id="confirmPassword" placeholder="Current password" required>
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="confirmUnderstand" required>
+                        <label for="confirmUnderstand">I understand this action cannot be undone</label>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" id="cancelDelete">Cancel</button>
+                    <button class="btn btn-danger" id="confirmDelete" disabled>
+                        <i class="fas fa-trash-alt"></i> Delete My Account
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+    <script src="/js/main.js"></script>
+</body>
+
+</html>

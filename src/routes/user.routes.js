@@ -1,6 +1,11 @@
 import { Router } from 'express'
-import { requireAuth, requireGuest } from '../middlewares/authentication.middleware.js'
-import { uploadImages, autoCleanupTemp } from '../middlewares/multer.middleware.js'
+import {
+	requireAuth,
+	requireGuest,
+	uploadImages,
+	autoCleanupTemp,
+	handleMulterError,
+} from '../middlewares/index.js'
 import {
 	userRegister,
 	userLogin,
@@ -13,6 +18,7 @@ import {
 	updateUserCoverImage,
 	getUserChannelProfile,
 	getUserWatchHistory,
+	deleteUserAccount,
 } from '../controllers/user.controller.js'
 
 // Initialize router instance
@@ -45,6 +51,7 @@ userRouter.route('/register').post(
 		{ name: 'avatar', maxCount: 1 },
 		{ name: 'coverImage', maxCount: 1 },
 	]),
+	handleMulterError,
 	autoCleanupTemp,
 	userRegister
 )
@@ -142,10 +149,22 @@ userRouter.route('/get-current-user').get(requireAuth, getCurrentUser)
 userRouter.route('/update-account-details').patch(requireAuth, updateAccountDetails)
 userRouter
 	.route('/update-user-avatar')
-	.patch(requireAuth, uploadImages.single('avatar'), autoCleanupTemp, updateUserAvatar)
+	.patch(
+		requireAuth,
+		uploadImages.single('avatar'),
+		handleMulterError,
+		autoCleanupTemp,
+		updateUserAvatar
+	)
 userRouter
 	.route('/update-user-cover-image')
-	.patch(requireAuth, uploadImages.single('coverImage'), autoCleanupTemp, updateUserCoverImage)
+	.patch(
+		requireAuth,
+		uploadImages.single('coverImage'),
+		handleMulterError,
+		autoCleanupTemp,
+		updateUserCoverImage
+	)
 
 /**
  * Get user channel profile (public)
@@ -168,5 +187,25 @@ userRouter.route('/channel/:username').get(getUserChannelProfile)
  * @controller getUserWatchHistory
  */
 userRouter.route('/get-user-watch-history').get(requireAuth, getUserWatchHistory)
+
+/**
+ * Delete user account and all associated data
+ * @route DELETE /api/v1/users/delete-account
+ * @access Private (authenticated users only)
+ * @middleware requireAuth
+ * @body {string} password - Current user password (required for confirmation)
+ * @note This action is irreversible and will permanently delete:
+ * - User profile and credentials
+ * - All videos uploaded by the user
+ * - All comments made by the user
+ * - All tweets created by the user
+ * - All playlists created by the user
+ * - All likes given by the user
+ * - All subscriptions (as subscriber and channel)
+ * - All associated files from cloud storage
+ * @returns {Object} Success message confirming account deletion
+ * @controller deleteUserAccount
+ */
+userRouter.route('/delete-account').delete(requireAuth, deleteUserAccount)
 
 export { userRouter }

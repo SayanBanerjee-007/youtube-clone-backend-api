@@ -1,11 +1,13 @@
 import { Router } from 'express'
-import { requireAuth } from '../middlewares/authentication.middleware.js'
 import {
+	requireAuth,
+	authOptional,
 	uploadImages,
 	uploadVideoWithThumbnail,
 	validateFieldSpecificSizes,
 	autoCleanupTemp,
-} from '../middlewares/multer.middleware.js'
+	handleMulterError,
+} from '../middlewares/index.js'
 import {
 	getAllVideos,
 	publishAVideo,
@@ -66,6 +68,7 @@ videoRouter
 				maxCount: 1,
 			},
 		]),
+		handleMulterError,
 		autoCleanupTemp,
 		validateFieldSpecificSizes,
 		publishAVideo
@@ -110,8 +113,14 @@ videoRouter
  */
 videoRouter
 	.route('/:videoId')
-	.get(getVideoById)
-	.patch(requireAuth, uploadImages.single('thumbnail'), autoCleanupTemp, updateVideo)
+	.get(authOptional, getVideoById)
+	.patch(
+		requireAuth,
+		uploadImages.single('thumbnail'),
+		handleMulterError,
+		autoCleanupTemp,
+		updateVideo
+	)
 	.delete(requireAuth, deleteVideo)
 
 /**

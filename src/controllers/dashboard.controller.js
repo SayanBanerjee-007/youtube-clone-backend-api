@@ -55,7 +55,9 @@ const getChannelStats = asyncHandler(async (req, res) => {
 		}
 
 		// Return successful response
-		res.status(200).json(new ApiResponse(200, channelStats, 'Channel statistics fetched successfully'))
+		res
+			.status(200)
+			.json(new ApiResponse(200, channelStats, 'Channel statistics fetched successfully'))
 	} catch (error) {
 		// Handle database errors
 		if (error instanceof ApiError) {
@@ -96,7 +98,9 @@ const getChannelVideos = asyncHandler(async (req, res) => {
 		}
 
 		// Return successful response with videos
-		res.status(200).json(new ApiResponse(200, videos, `${videos.length} video(s) fetched successfully`))
+		res
+			.status(200)
+			.json(new ApiResponse(200, videos, `${videos.length} video(s) fetched successfully`))
 	} catch (error) {
 		// Handle database errors
 		if (error instanceof ApiError) {

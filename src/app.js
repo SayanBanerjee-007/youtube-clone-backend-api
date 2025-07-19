@@ -1,6 +1,8 @@
 import express from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import { CORS_ORIGIN } from './constants.js'
 import { ApiResponse } from './utils/ApiResponse.js'
 import { generalRateLimit } from './middlewares/rateLimiter.middleware.js'
@@ -11,8 +13,23 @@ import { generalRateLimit } from './middlewares/rateLimiter.middleware.js'
  */
 const app = express()
 
+// Get current directory for ES modules
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
 // Trust proxy for accurate IP detection
 app.set('trust proxy', 1)
+
+// ============================================
+// VIEW ENGINE CONFIGURATION
+// ============================================
+
+/**
+ * EJS Template Engine Configuration
+ * Set up EJS for rendering HTML views
+ */
+app.set('view engine', 'ejs')
+app.set('views', path.join(__dirname, 'views'))
 
 // ============================================
 // MIDDLEWARE CONFIGURATION
@@ -23,7 +40,7 @@ app.set('trust proxy', 1)
  * Applied to all routes to prevent abuse
  * 100 requests per 15 minutes per IP
  */
-app.use(generalRateLimit)
+// app.use(generalRateLimit) // Not implemented yet
 
 /**
  * CORS Configuration
@@ -48,7 +65,7 @@ app.use(cookieParser())
  * Static File Serving
  * Serves static files from the 'public' directory
  */
-app.use(express.static('public'))
+app.use(express.static(path.join(__dirname, '../public')))
 
 /**
  * JSON Body Parser
@@ -91,6 +108,22 @@ import { playlistRouter } from './routes/playlist.routes.js'
 // ============================================
 // ROUTES DECLARATION
 // ============================================
+
+/**
+ * API Documentation Route
+ * Serves the interactive API documentation page
+ * Automatically detects device type and serves appropriate version
+ */
+app.get('/', (req, res) => {
+	res.redirect('/api-docs')
+})
+
+app.get('/api-docs', (req, res) => {
+	res.render('api-docs', {
+		title: 'YouTube Clone API Documentation',
+		baseUrl: req.protocol + '://' + req.get('host'),
+	})
+})
 
 /**
  * Health Check Routes

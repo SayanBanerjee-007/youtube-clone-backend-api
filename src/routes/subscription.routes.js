@@ -22,9 +22,9 @@ const subscriptionRouter = Router()
  * @route GET /api/v1/subscriptions
  * @access Private (authenticated users only)
  * @middleware requireAuth
- * @query {number} page - Page number for pagination (optional)
- * @query {number} limit - Number of channels per page (optional)
- * @returns {Object} Paginated list of subscribed channels
+ * @query {number} page - Page number for pagination (optional, default: 1)
+ * @query {number} limit - Number of channels per page (optional, default: 10, max: 100)
+ * @returns {Object} Paginated list of subscribed channels with pagination metadata
  * @controller getSubscribedChannels
  */
 subscriptionRouter.route('/').get(requireAuth, getSubscribedChannels)
@@ -54,17 +54,17 @@ subscriptionRouter
 	.post(requireAuth, toggleSubscription)
 
 /**
- * Get all subscribers for a specific user's channel
- * @route GET /api/v1/subscriptions/user/:subscriberId
- * @access Private (authenticated users only)
+ * Get all subscribers for a specific channel
+ * @route GET /api/v1/subscriptions/subscribers/:channelId
+ * @access Private (Channel Owner Only)
  * @middleware requireAuth
- * @params {string} subscriberId - The unique identifier of the user whose subscribers to fetch (required)
- * @query {number} page - Page number for pagination (optional)
- * @query {number} limit - Number of subscribers per page (optional)
- * @note Typically only the channel owner should access this
- * @returns {Object} Paginated list of channel subscribers
+ * @params {string} channelId - The unique identifier of the channel whose subscribers to fetch (required)
+ * @query {number} page - Page number for pagination (optional, default: 1)
+ * @query {number} limit - Number of subscribers per page (optional, default: 10, max: 100)
+ * @note Only the channel owner can access their subscriber list
+ * @returns {Object} Paginated list of channel subscribers with pagination metadata
  * @controller getUserChannelSubscribers
  */
-subscriptionRouter.route('/user/:subscriberId').get(requireAuth, getUserChannelSubscribers)
+subscriptionRouter.route('/subscribers/:channelId').get(requireAuth, getUserChannelSubscribers)
 
 export { subscriptionRouter }
